@@ -33,16 +33,23 @@ int main(int argc, char** argv){
 }
 
 void detectAndDisplay(Mat frame){
-  Mat mask, cover;
-  cvtColor(frame, mask, COLOR_BGR2HSV);
-  // Yellow
-  inRange(mask, Scalar(20, 100, 100), Scalar(30, 255, 255), mask);
-  
-  findNonZero(mask, cover);
-  Rect rect = boundingRect(cover);
+  Mat frame_gray;
+  cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
+  GaussianBlur(frame_gray, frame_gray, Size(9, 9), 2, 2);
+  // medianBlur(frameHLS, frame_gray, 5);
 
-  rectangle(frame, rect.tl(), rect.br(), Scalar(255,0,0), 2);
-  // cvtColor(frame, mask, COLOR_BGR2HLS);
+  std::vector<Vec3f> circles;
+  HoughCircles(frame_gray, circles, HOUGH_GRADIENT, 1, frame_gray.rows/16, 100, 30, 0, 50);
+  for( size_t i = 0; i < circles.size(); i++ ){
+      Vec3i c = circles[i];
+      Point center = Point(c[0], c[1]);
+      // circle center
+      circle( frame, center, 1, Scalar(0,100,100), 3, LINE_AA);
+      // circle outline
+      int radius = c[2];
+      circle( frame, center, radius, Scalar(255,0,255), 3, LINE_AA);
+  }
 
   imshow("standard", frame);
+  // imshow("mask", mask);
 }
